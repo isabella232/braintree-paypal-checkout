@@ -32,7 +32,7 @@ The integration requires three core steps to do the implementation:
 ```sh
 > npm start
 ```
- After the project is compiled, please access to [http://localhost:3000](http://localhost:3000) to try the example.
+ After the project is compiled, please access to [http://localhost:3000](http://localhost:3000) to try the example or try this [demo](https://bt-pp-checkout.herokuapp.com/).
 
 
 ### Contribution
