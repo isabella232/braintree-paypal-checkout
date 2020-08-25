@@ -11,7 +11,7 @@ The diagram shows the design flow of client and server SDK in order to securely 
 5. Your server code receives the payment method nonce and then uses the server SDK to create a transaction.
 <br>
 <p float="left">
-  <img src="https://github.com/paypal-gps-apac/braintree-paypal-checkout/blob/master/screenshot/image1.png" width="800" height="508">
+  <img src="./blob/master/screenshot/image1.png" width="800" height="508">
 </p>
 
 ## Integration
