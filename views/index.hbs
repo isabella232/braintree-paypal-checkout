@@ -1,0 +1,92 @@
+<!-- Load the client component. -->
+<script src="https://js.braintreegateway.com/web/3.64.2/js/client.min.js"></script>
+
+<!-- Load the PayPal Checkout component. -->
+<script src="https://js.braintreegateway.com/web/3.64.2/js/paypal-checkout.min.js"></script>
+
+<script src="http://code.jquery.com/jquery-3.2.1.min.js" crossorigin="anonymous"></script>
+
+<div id="paypal-button"></div>
+
+<div class="loader-lty" id="loader" >
+    <div class="loader" ></div>
+</div>
+
+<script>
+    document.getElementById("loader").style.display = "none";
+
+    $.ajax({
+        type: 'GET',
+        url: '/getclienttoken'
+    }).done(function(result) {
+        // Create a client.
+        braintree.client.create({
+            authorization: result
+        }).then(function (clientInstance) {
+        // Create a PayPal Checkout component.
+            return braintree.paypalCheckout.create({
+                client: clientInstance
+            });
+        }).then(function (paypalCheckoutInstance) {
+            return paypalCheckoutInstance.loadPayPalSDK({
+                currency: 'USD',
+                intent: 'capture'
+            });
+        }).then(function (paypalCheckoutInstance) {
+            return paypal.Buttons({
+                fundingSource: paypal.FUNDING.PAYPAL,
+                createOrder: function () {
+                    return paypalCheckoutInstance.createPayment({
+                        flow: 'checkout', // Required
+                        amount: 10.00, // Required
+                        currency: 'USD', // Required, must match the currency passed in with loadPayPalSDK
+                        intent: 'capture', // Must match the intent passed in with loadPayPalSDK
+                        enableShippingAddress: true,
+                        shippingAddressEditable: false,
+                        shippingAddressOverride: {
+                            recipientName: 'Scruff McGruff',
+                            line1: '1234 Main St.',
+                            line2: 'Unit 1',
+                            city: 'Chicago',
+                            countryCode: 'US',
+                            postalCode: '60652',
+                            state: 'IL',
+                            phone: '123.456.7890'
+                        }
+                    });
+                },
+                onApprove: function (data, actions) {
+                    document.getElementById("loader").style.display = "block";
+
+                    return paypalCheckoutInstance.tokenizePayment(data).then(function (payload) {
+                        // Submit `payload.nonce` to your server
+                        $.ajax({
+                            type: 'POST',
+                            url: '/checkout',
+                            data: {'paymentMethodNonce': payload.nonce}
+                        }).done(function(result) {
+                            if(result.success){
+                                document.getElementById("loader").style.display = "none";
+                                alert(`Payment ${result.transaction.id} success`);
+                            }
+                        })
+                    });
+                },
+                onCancel: function (data) {
+                    console.log('PayPal payment cancelled', JSON.stringify(data, 0, 2));
+                },
+                onError: function (err) {
+                    console.error('PayPal error', err);
+                }
+            }).render('#paypal-button');
+        }).then(function () {
+        // The PayPal button will be rendered in an html element with the ID
+        // `paypal-button`. This function will be called when the PayPal button
+        // is set up and ready to be used
+        });
+    })
+
+
+
+
+</script>
