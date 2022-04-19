@@ -1,20 +1,26 @@
-var express = require('express');
-var router = express.Router();
-var braintree = require('braintree');
+const express = require('express');
+const router = express.Router();
+const braintree = require('braintree');
 
 router.post('/', function(req, res, next) {
-  var gateway = braintree.connect({
-    environment:  braintree.Environment.Sandbox,
-    merchantId:   'fgbw23g9cwm847px',
-    publicKey:    'nygrcphd83kgqj6w',
-    privateKey:   '8d8f2a43045fa17464c24674981aadd3'
+  const gateway = new braintree.BraintreeGateway({
+    environment: braintree.Environment.Sandbox,
+    // Use your own credentials from the sandbox Control Panel here
+    merchantId: 'fgbw23g9cwm847px',
+    publicKey: 't2kmhtsgsq33r8qd',
+    privateKey: 'c76733212321ea88f69a8c54117581fc'
   });
 
   // Use the payment method nonce here
-  var nonceFromTheClient = req.body.paymentMethodNonce;
+  const nonceFromTheClient = req.body.paymentMethodNonce;
+
+  console.log("nonce")
+  console.log(req.body)
+  console.log(req.body.paymentMethodNonce)
   // Create a new transaction for $10
-  gateway.transaction.sale({
-    amount: '10.00',
+
+  const newTransaction = gateway.transaction.sale({
+    amount: '22.00',
     paymentMethodNonce: nonceFromTheClient,
     options: {
       // This option requests the funds from the transaction

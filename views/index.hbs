@@ -1,92 +1,116 @@
-<!-- Load the client component. -->
-<script src="https://js.braintreegateway.com/web/3.64.2/js/client.min.js"></script>
+<!DOCTYPE html>
+<html lang="en">
 
-<!-- Load the PayPal Checkout component. -->
-<script src="https://js.braintreegateway.com/web/3.64.2/js/paypal-checkout.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <title>BT Checkout</title>
+    <link rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/bootstrap/4.3.0/css/bootstrap.min.css'>
+    <link rel="stylesheet" href="style.css">
 
-<script src="https://code.jquery.com/jquery-3.2.1.min.js" crossorigin="anonymous"></script>
+</head>
 
-<div id="paypal-button"></div>
+<body>
+    <!-- partial:index.partial.html -->
+    <div id="bar-checkout-panel" class="bar-checkout-panel">
+        <div class="bar-panel-body">
+            <h2 class="bar-title">Steps 3: Payment (Braintree)</h2>
 
-<div class="loader-lty" id="loader" >
-    <div class="loader" ></div>
-</div>
+            <div class="bar-progress-bar">
+                <div class="barstep baractive"></div>
+                <div class="barstep baractive"></div>
+                <div class="barstep"></div>
+                <div class="barstep"></div>
+            </div>
 
-<script>
-    document.getElementById("loader").style.display = "none";
-
-    $.ajax({
-        type: 'GET',
-        url: '/getclienttoken'
-    }).done(function(result) {
-        // Create a client.
-        braintree.client.create({
-            authorization: result
-        }).then(function (clientInstance) {
-        // Create a PayPal Checkout component.
-            return braintree.paypalCheckout.create({
-                client: clientInstance
-            });
-        }).then(function (paypalCheckoutInstance) {
-            return paypalCheckoutInstance.loadPayPalSDK({
-                currency: 'USD',
-                intent: 'capture'
-            });
-        }).then(function (paypalCheckoutInstance) {
-            return paypal.Buttons({
-                fundingSource: paypal.FUNDING.PAYPAL,
-                createOrder: function () {
-                    return paypalCheckoutInstance.createPayment({
-                        flow: 'checkout', // Required
-                        amount: 10.00, // Required
-                        currency: 'USD', // Required, must match the currency passed in with loadPayPalSDK
-                        intent: 'capture', // Must match the intent passed in with loadPayPalSDK
-                        enableShippingAddress: true,
-                        shippingAddressEditable: false,
-                        shippingAddressOverride: {
-                            recipientName: 'Scruff McGruff',
-                            line1: '1234 Main St.',
-                            line2: 'Unit 1',
-                            city: 'Chicago',
-                            countryCode: 'US',
-                            postalCode: '60652',
-                            state: 'IL',
-                            phone: '123.456.7890'
-                        }
-                    });
-                },
-                onApprove: function (data, actions) {
-                    document.getElementById("loader").style.display = "block";
-
-                    return paypalCheckoutInstance.tokenizePayment(data).then(function (payload) {
-                        // Submit `payload.nonce` to your server
-                        $.ajax({
-                            type: 'POST',
-                            url: '/checkout',
-                            data: {'paymentMethodNonce': payload.nonce}
-                        }).done(function(result) {
-                            if(result.success){
-                                document.getElementById("loader").style.display = "none";
-                                alert(`Payment ${result.transaction.id} success`);
-                            }
-                        })
-                    });
-                },
-                onCancel: function (data) {
-                    console.log('PayPal payment cancelled', JSON.stringify(data, 0, 2));
-                },
-                onError: function (err) {
-                    console.error('PayPal error', err);
-                }
-            }).render('#paypal-button');
-        }).then(function () {
-        // The PayPal button will be rendered in an html element with the ID
-        // `paypal-button`. This function will be called when the PayPal button
-        // is set up and ready to be used
-        });
-    })
+            <div>
+                <label class="payment-info">Payment Method:</label>
+            </div>
 
 
+            <div class="payment-method">
+                <label for="card" class="method card">
+                    <div class="card-logos">
+                        <img src="https://designmodo.com/demo/checkout-panel/img/visa_logo.png" />
+                        <img src="https://designmodo.com/demo/checkout-panel/img/mastercard_logo.png" />
+                    </div>
 
+                    <div class="radio-input">
+                        <input id="hoisted-field-radio" type="radio" name="payment" checked>
+                        Pay with Hoisted Field
+                    </div>
+                </label>
 
-</script>
+                <label for="paypal" class="method paypal">
+                    <img src="https://designmodo.com/demo/checkout-panel/img/paypal_logo.png" />
+                    <div class="radio-input">
+                        <input id="dropin-ui-radio" type="radio" name="payment">
+                        Pay with Drop-in UI
+                    </div>
+                </label>
+            </div>
+
+            <div id="hoisted-field" >
+                <form class="needs-validation" novalidate="">
+                <div class="row">
+                    <div class="col-sm-6 mb-3">
+                        <label for="cc-name">Name on card</label>
+                        <input type="text" class="form-control" id="cc-name" placeholder="" required="true">
+                        <small class="text-muted">Full name as displayed on card</small>
+                        <div class="invalid-feedback">
+                            Name on card is required
+                        </div>
+                    </div>
+                    <div class="col-sm-6 mb-3">
+                        <label for="email">Email</label>
+                        <input type="email" class="form-control" id="email" placeholder="you@example.com">
+                        <div class="invalid-feedback">
+                            Please enter a valid email address for shipping updates.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-sm-6 mb-3">
+                        <label for="cc-number">Credit card number</label>
+                        <div class="form-control" id="cc-number"></div>
+                        <div class="invalid-feedback">
+                            Credit card number is required
+                        </div>
+                    </div>
+                    <div class="col-sm-3 mb-3">
+                        <label for="cc-expiration">Expiration</label>
+                        <div class="form-control" id="cc-expiration"></div>
+                        <div class="invalid-feedback">
+                            Expiration date required
+                        </div>
+                    </div>
+                    <div class="col-sm-3 mb-3">
+                        <label for="cc-expiration">CVV</label>
+                        <div class="form-control" id="cc-cvv"></div>
+                        <div class="invalid-feedback">
+                            Security code required
+                        </div>
+                    </div>
+                </div>
+                </form>
+            </div>
+
+            <div id="ui-dropin" class="dropin-ui-body" style="display: none;"></div>
+
+        </div>
+
+        <div class="bar-panel-footer">
+            <button class="bar-btn bar-back-btn" id="back-btn">Back</button>
+            <button class="bar-btn bar-next-btn" id="pay-now">
+                <span id="pay-text">Pay Now</span>
+                <span id="loading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="display: none;"></span>
+            </button>
+        </div>
+    </div>
+
+    <div class="payment-success-body" id="payment-success-body">
+        <h2 class="bar-title">Payment Success!</h2>
+    </div>
+</body>
+
+</html>
